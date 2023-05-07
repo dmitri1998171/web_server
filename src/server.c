@@ -5,16 +5,33 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
+#define TMP_BUF 128
 
 int main() {
     char buffer[BUFFER_SIZE];
-    char resp[] = "HTTP/1.0 200 OK\r\n"
-                  "Server: webserver-c\r\n"
-                  "Content-type: text/html\r\n\r\n"
-                  "<html>hello, world</html>\r\n";
+    char resp[BUFFER_SIZE] = "HTTP/1.0 200 OK\r\nServer: webserver-c\r\nContent-type: text/html\r\n\r\n";
+    char tmp[TMP_BUF];
+
+    FILE *fileHTML;
+    if ((fileHTML = fopen("/Users/user/Programming/web_server/text.html", "r") ) == NULL) {
+        printf("Error: Cannot open file.\n");
+        exit (1);
+    }
+
+    while (!feof (fileHTML)) {
+        fgets(tmp, TMP_BUF, fileHTML);
+        strcat(resp, tmp);
+    }
+    
+    fclose(fileHTML);
+
+    // printf("%s", resp);
 
     // Create a socket
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -61,8 +78,7 @@ int main() {
         printf("connection accepted\n");
 
         // Get client address
-        int sockn = getsockname(newsockfd, (struct sockaddr *)&client_addr,
-                                (socklen_t *)&client_addrlen);
+        int sockn = getsockname(newsockfd, (struct sockaddr *)&client_addr, (socklen_t *)&client_addrlen);
         if (sockn < 0) {
             perror("webserver (getsockname)");
             continue;
@@ -78,6 +94,7 @@ int main() {
         // Read the request
         char method[BUFFER_SIZE], uri[BUFFER_SIZE], version[BUFFER_SIZE];
         sscanf(buffer, "%s %s %s", method, uri, version);
+        // printf("%s \n",buffer);
         printf("[%s:%u] %s %s %s\n", inet_ntoa(client_addr.sin_addr),
                ntohs(client_addr.sin_port), method, version, uri);
 
