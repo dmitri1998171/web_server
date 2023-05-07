@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -7,6 +7,8 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <unistd.h>
+
+#include "spdlog/spdlog.h"
 
 #define PORT 56000
 #define MSG_SIZE 1024
@@ -40,7 +42,7 @@ void respond(int socket)
     int rcvd, fd, bytes_read;
     char *ptr;
 
-    char* buf = malloc(65535);
+    char* buf = (char*) malloc(65535);
     rcvd=recv(socket , buf, 65535, 0);
 
     if (rcvd<0)    // receive error
@@ -130,6 +132,7 @@ void *newSock(void *arg) {
 }
 
 int main(){
+	spdlog::info("Welcome to spdlog!");
 	int sockfd;
 	socklen_t structLength;
 
@@ -169,7 +172,7 @@ int main(){
 
 	while (1) {
 		//	Динамическая стркутура через malloc
-		struct conectClient *links = malloc(sizeof(struct conectClient));
+		struct conectClient *links = (struct conectClient *) malloc(sizeof(struct conectClient));
 		
 		links->newSocket = accept(sockfd, (struct sockaddr*)&newAddr, &structLength);
 	
