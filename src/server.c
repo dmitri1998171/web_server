@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "spdlog/spdlog.h"
+
 #define PORT 8080
 
 #define BUFFER_SIZE 1024

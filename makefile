@@ -1,4 +1,4 @@
-CC := gcc 
+CC := g++
 CFLAGS := -pthread
 
 BIN_S = server
