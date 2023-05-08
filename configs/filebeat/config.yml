@@ -1,0 +1,11 @@
+filebeat.inputs:
+  - type: filestream
+    enabled: true
+    # Я запущу filebeat в докере и проброшу логи приложения по данному пути
+    paths:
+      - /host_metrics_app/host_metrics_app.log
+    
+
+output.logstash:
+  # Будьте внимательны при запуске вне докера и вместо logstash укажите правильный адрес хоста с logstash. 
+  hosts: ["127.0.0.1:5044"]
