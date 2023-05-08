@@ -1,4 +1,3 @@
-// webserver.c
 #include <arpa/inet.h>
 #include <errno.h>
 #include <stdio.h>
@@ -6,32 +5,30 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
-
 
 #define PORT 8080
+
 #define BUFFER_SIZE 1024
-#define TMP_BUF 128
+#define PARAMS_BUF 10
 
 int main() {
     char buffer[BUFFER_SIZE];
-    char resp[BUFFER_SIZE] = "HTTP/1.0 200 OK\r\nServer: webserver-c\r\nContent-type: text/html\r\n\r\n";
-    char tmp[TMP_BUF];
+    char httpHead[BUFFER_SIZE] = "HTTP/1.0 200 OK\r\nServer: webserver-c\r\nContent-type: text/html\r\n\r\n";
+    char content[BUFFER_SIZE];
 
     FILE *fileHTML;
-    if ((fileHTML = fopen("/Users/user/Programming/web_server/text.html", "r") ) == NULL) {
-        printf("Error: Cannot open file.\n");
-        exit (1);
+    if ((fileHTML = fopen("text.html", "r")) == NULL) {
+        perror("Error: Cannot open file.\n");
+        exit(1);
     }
 
-    while (!feof (fileHTML)) {
-        fgets(tmp, TMP_BUF, fileHTML);
-        strcat(resp, tmp);
+    // String concatenation
+    while ( ! feof(fileHTML)) {
+        fgets(content, BUFFER_SIZE, fileHTML);
+        strcat(httpHead, content);
     }
     
     fclose(fileHTML);
-
-    // printf("%s", resp);
 
     // Create a socket
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -69,8 +66,7 @@ int main() {
 
     for (;;) {
         // Accept incoming connections
-        int newsockfd = accept(sockfd, (struct sockaddr *)&host_addr,
-                               (socklen_t *)&host_addrlen);
+        int newsockfd = accept(sockfd, (struct sockaddr *)&host_addr, (socklen_t *)&host_addrlen);
         if (newsockfd < 0) {
             perror("webserver (accept)");
             continue;
@@ -84,7 +80,7 @@ int main() {
             continue;
         }
 
-        // Read from the socket
+        // Recieve request from client
         int valread = read(newsockfd, buffer, BUFFER_SIZE);
         if (valread < 0) {
             perror("webserver (read)");
@@ -92,14 +88,15 @@ int main() {
         }
 
         // Read the request
-        char method[BUFFER_SIZE], uri[BUFFER_SIZE], version[BUFFER_SIZE];
+        char method[PARAMS_BUF], uri[BUFFER_SIZE], version[PARAMS_BUF];
         sscanf(buffer, "%s %s %s", method, uri, version);
-        // printf("%s \n",buffer);
-        printf("[%s:%u] %s %s %s\n", inet_ntoa(client_addr.sin_addr),
-               ntohs(client_addr.sin_port), method, version, uri);
+        buffer[strlen(buffer)] = '\0';
 
-        // Write to the socket
-        int valwrite = write(newsockfd, resp, strlen(resp));
+        printf("[%s:%u] %s %s %s\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), method, uri, version);
+        printf("%s \n",buffer);
+
+        // Send response to client
+        int valwrite = write(newsockfd, httpHead, strlen(httpHead));
         if (valwrite < 0) {
             perror("webserver (write)");
             continue;
