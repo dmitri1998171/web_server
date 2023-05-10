@@ -9,7 +9,10 @@
 #include <thread>
 #include <mutex>
 
+#define FMT_HEADER_ONLY
+#include <fmt/format.h>
 #include "spdlog/spdlog.h"
+
 
 #define PORT 8080
 
@@ -59,6 +62,13 @@ void HTTPhandler(int newsockfd, char msg[BUFFER_SIZE]) {
     sscanf(rcv_buffer, "%s %s %s", method, uri, version);
     rcv_buffer[strlen(rcv_buffer)] = '\0';
 
+    if( (strcmp(uri, "/" ) != 0) && (strcmp(uri, "#send") != 0) ){
+        spdlog::info("uri: {}", uri);
+        spdlog::error("Error: 404 page does not exist");
+        exit(1);
+    }
+
+
     cout << "\n==================================================\n\n";
     cout << "[*] REQUEST HEADER: " << endl << rcv_buffer << endl << endl;
     cout << "[*] RESPONCE HEADER: " << endl << msg << endl << endl;
@@ -72,7 +82,7 @@ void HTTPhandler(int newsockfd, char msg[BUFFER_SIZE]) {
 }
 
 int main() {
-    spdlog::info("New accept to client");
+    spdlog::info("Server started");
     
     // Create a socket
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -81,6 +91,13 @@ int main() {
         exit(1);
     }
     cout << "socket created successfully\n";
+
+    // Allows you to run multiple instances of the same server on the same port
+    const int enable = 1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0){
+    	spdlog::error("Setsockopt(SO_REUSEADDR) failed. \n");
+		exit(1);
+	}
 
     // Create the address to bind the socket to
     struct sockaddr_in host_addr;
@@ -119,6 +136,7 @@ int main() {
             continue;
         }
         cout << "connection accepted\n";
+        spdlog::info("New accept to client");
 
         // Get client address
         if (getsockname(newsockfd, (struct sockaddr *)&client_addr, (socklen_t *)&client_addrlen) < 0) {
