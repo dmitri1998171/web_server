@@ -68,7 +68,6 @@ void HTTPhandler(int newsockfd, char msg[BUFFER_SIZE]) {
         exit(1);
     }
 
-
     cout << "\n==================================================\n\n";
     cout << "[*] REQUEST HEADER: " << endl << rcv_buffer << endl << endl;
     cout << "[*] RESPONCE HEADER: " << endl << msg << endl << endl;
@@ -96,8 +95,8 @@ int main() {
     const int enable = 1;
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0){
     	spdlog::error("Setsockopt(SO_REUSEADDR) failed. \n");
-		exit(1);
-	}
+      exit(1);
+    }
 
     // Create the address to bind the socket to
     struct sockaddr_in host_addr;
