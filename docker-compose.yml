@@ -56,6 +56,13 @@ services:
     depends_on:
       - elasticsearch
 
+  businessLogic:
+    image: web_app
+    networks:
+      - elk
+    ports:
+      - "18324:18324"
+
 networks:
   elk:
     driver: bridge
