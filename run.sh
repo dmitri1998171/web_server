@@ -1,1 +1,3 @@
-docker run -it --rm -p 8080:8080 -v $PWD:/home $1
+# docker run -it --rm -v $PWD:/home $1
+docker-compose build
+docker-compose up

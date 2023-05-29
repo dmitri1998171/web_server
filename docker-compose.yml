@@ -1,6 +1,17 @@
 version: '3.7'
 
 services:
+  web_server:
+    build: .
+    image: web_server
+    volumes:
+      - $PWD:/home
+    networks:
+      - elk
+    ports:
+      - 80:80
+      - 8080:8080
+
   elasticsearch:
     image: elasticsearch:7.16.1
     volumes:
@@ -56,8 +67,11 @@ services:
     depends_on:
       - elasticsearch
 
-  businessLogic:
+  web_app:
+    build: ./content
     image: web_app
+    volumes:
+      - $PWD/run_scripts/run_web_app.sh:/home/run_scripts/run_web_app.sh
     networks:
       - elk
     ports:
